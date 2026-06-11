@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Master (Primary)
+  postgres-master:
+    image: postgres:18-alpine
+    container_name: auth-db-master
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth_db
+      POSTGRES_INITDB_ARGS: >
+        -c wal_level=replica
+        -c max_wal_senders=10
+        -c max_replication_slots=10
+        -c hot_standby=on
+    command: >
+      postgres
+      -c wal_level=replica
+      -c max_wal_senders=10
+      -c max_replication_slots=10
+      -c hot_standby=on
+      -c hba_file=/var/lib/postgresql/data/pg_hba.conf
+    volumes:
+      - master_data:/var/lib/postgresql/data
+      - ./init-master.sql:/docker-entrypoint-initdb.d/10-init-master.sql
+      - ./pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+    ports:
+      - "5433:5432"
+    networks:
+      - auth-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d auth_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  master_data:
+
+networks:
+  auth-network:
+    driver: bridge
