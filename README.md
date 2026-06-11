@@ -12,7 +12,7 @@ Membuat auth service untuk studi kasus senior developer
 ## Tech
 - Spring Boot
 - Docker
-- DB
+- Postgres
 
 ## Yang Akan Dipelajari
 ### Database
