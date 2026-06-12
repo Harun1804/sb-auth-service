@@ -1,4 +1,4 @@
-package com.harun.auth_service.dtos.req;
+package com.harun.auth_service.payloads.user.req;
 
 import jakarta.validation.constraints.*;
 import lombok.*;

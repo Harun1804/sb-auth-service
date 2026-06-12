@@ -1,9 +1,9 @@
 package com.harun.auth_service.controllers;
 
-import com.harun.auth_service.dtos.req.CreateUserRequest;
-import com.harun.auth_service.dtos.req.UpdateUserRequest;
-import com.harun.auth_service.dtos.req.UserSearchRequest;
-import com.harun.auth_service.dtos.res.UserResponse;
+import com.harun.auth_service.payloads.user.req.CreateUserRequest;
+import com.harun.auth_service.payloads.user.req.UpdateUserRequest;
+import com.harun.auth_service.payloads.user.req.UserSearchRequest;
+import com.harun.auth_service.payloads.user.res.UserResponse;
 import com.harun.auth_service.services.UserService;
 import com.harun.formatter.ApiResponse;
 import jakarta.validation.Valid;

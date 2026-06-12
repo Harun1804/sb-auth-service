@@ -1,4 +1,4 @@
-package com.harun.auth_service.dtos.res;
+package com.harun.auth_service.payloads.user.res;
 
 import lombok.*;
 

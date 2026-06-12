@@ -1,9 +1,9 @@
 package com.harun.auth_service.services;
 
-import com.harun.auth_service.dtos.req.CreateUserRequest;
-import com.harun.auth_service.dtos.req.UpdateUserRequest;
-import com.harun.auth_service.dtos.req.UserSearchRequest;
-import com.harun.auth_service.dtos.res.UserResponse;
+import com.harun.auth_service.payloads.user.req.CreateUserRequest;
+import com.harun.auth_service.payloads.user.req.UpdateUserRequest;
+import com.harun.auth_service.payloads.user.req.UserSearchRequest;
+import com.harun.auth_service.payloads.user.res.UserResponse;
 import org.springframework.data.domain.Page;
 
 import java.util.UUID;
