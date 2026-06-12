@@ -1,9 +1,6 @@
 package com.harun.auth_service.controllers;
 
-import com.harun.auth_service.payloads.user.req.CreateUserRequest;
-import com.harun.auth_service.payloads.user.req.UpdateUserRequest;
-import com.harun.auth_service.payloads.user.req.UserSearchRequest;
-import com.harun.auth_service.payloads.user.res.UserResponse;
+import com.harun.auth_service.payloads.user.req.SearchUserRequest;
 import com.harun.auth_service.services.UserService;
 import com.harun.formatter.ApiResponse;
 import jakarta.validation.Valid;
@@ -12,6 +9,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.harun.auth_service.payloads.user.req.CreateUserRequest;
+import com.harun.auth_service.payloads.user.req.UpdateUserRequest;
+import com.harun.auth_service.payloads.user.res.UserResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +30,7 @@ public class UserController {
             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int size
     ) {
-        UserSearchRequest request = UserSearchRequest.builder()
+        SearchUserRequest request = SearchUserRequest.builder()
                 .keyword(keyword)
                 .sortBy(sortBy)
                 .sortDirection(sortDirection)
@@ -91,8 +91,7 @@ public class UserController {
 
     @PutMapping(value = "/{id}")
     public ResponseEntity<ApiResponse<Void>> update(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest updateUserRequest) {
-        updateUserRequest.setId(id);
-        userService.updateUser(updateUserRequest);
+        userService.updateUser(id, updateUserRequest);
         return ResponseEntity.ok(ApiResponse.success(null, "User updated successfully."));
     }
 

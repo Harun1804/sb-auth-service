@@ -2,10 +2,10 @@ package com.harun.auth_service.services.impl;
 
 import com.harun.auth_service.payloads.user.req.CreateUserRequest;
 import com.harun.auth_service.payloads.user.req.UpdateUserRequest;
-import com.harun.auth_service.payloads.user.req.UserSearchRequest;
-import com.harun.auth_service.payloads.user.res.UserResponse;
+import com.harun.auth_service.payloads.user.req.SearchUserRequest;
 import com.harun.auth_service.entities.User;
 import com.harun.auth_service.enums.UserStatus;
+import com.harun.auth_service.payloads.user.res.UserResponse;
 import com.harun.auth_service.repositories.UserRepository;
 import com.harun.auth_service.services.UserService;
 import com.harun.auth_service.utils.HashPassword;
@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
     private final HashPassword hashPassword;
 
     @Override
-    public Page<UserResponse> getUsers(UserSearchRequest userSearchRequest) {
+    public Page<UserResponse> getUsers(SearchUserRequest userSearchRequest) {
         Specification<User> specification = (root, query, builder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -66,31 +66,31 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void createUser(CreateUserRequest request) {
-        if (userRepository.findByEmailIgnoreCase(request.getEmail()).isPresent()) {
+        if (userRepository.findByEmailIgnoreCase(request.email()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
 
         User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPassword(hashPassword.generate(request.getPassword()));
+        user.setEmail(request.email());
+        user.setPassword(hashPassword.generate(request.password()));
         user.setStatus(UserStatus.ACTIVE);
 
         userRepository.save(user);
     }
 
     @Override
-    public void updateUser(UpdateUserRequest request) {
-        User user = userRepository.findById(request.getId()).orElseThrow(
+    public void updateUser(UUID id, UpdateUserRequest request) {
+        User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
         );
 
-        if (!Objects.equals(user.getEmail(), request.getEmail()) && userRepository.findByEmailIgnoreCase(request.getEmail()).isPresent()) {
+        if (!Objects.equals(user.getEmail(), request.email()) && userRepository.findByEmailIgnoreCase(request.email()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
 
-        user.setEmail(request.getEmail());
-        if (request.getPassword() != null) {
-            user.setPassword(hashPassword.generate(request.getPassword()));
+        user.setEmail(request.email());
+        if (request.password() != null) {
+            user.setPassword(hashPassword.generate(request.password()));
         }
         userRepository.save(user);
     }
@@ -105,14 +105,11 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserResponse generateUserResponse(User user, Boolean needPassword) {
-        UserResponse userResponse = new UserResponse();
-        userResponse.setId(user.getId());
-        userResponse.setEmail(user.getEmail());
-        userResponse.setStatus(user.getStatus().toString());
-        if (needPassword) {
-            userResponse.setPassword(user.getPassword());
-        }
-
-        return userResponse;
+        return new UserResponse(
+            user.getId(),
+            user.getEmail(),
+            needPassword ? user.getPassword() : null,
+            user.getStatus().toString()
+        );
     }
 }

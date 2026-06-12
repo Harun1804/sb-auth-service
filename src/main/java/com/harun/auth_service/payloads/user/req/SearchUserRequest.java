@@ -10,5 +10,5 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class UserSearchRequest extends BaseSearchPaginateReq {
+public class SearchUserRequest extends BaseSearchPaginateReq {
 }
