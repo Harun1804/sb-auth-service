@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(
+        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
         );
         return generateUserResponse(user, true);
@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void createUser(CreateUserRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepository.findByEmailIgnoreCase(request.getEmail()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
 
@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
         );
 
-        if (!Objects.equals(user.getEmail(), request.getEmail()) && userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (!Objects.equals(user.getEmail(), request.getEmail()) && userRepository.findByEmailIgnoreCase(request.getEmail()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
 
