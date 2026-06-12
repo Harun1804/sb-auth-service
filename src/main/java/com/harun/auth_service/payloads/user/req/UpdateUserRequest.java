@@ -5,11 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-import java.util.UUID;
-
 public record UpdateUserRequest(
-        UUID id,
-
         @NotBlank(message = "Email is required")
         @Email(message = "Email should be valid")
         String email,

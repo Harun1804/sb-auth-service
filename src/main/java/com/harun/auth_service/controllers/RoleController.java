@@ -76,8 +76,7 @@ public class RoleController {
 
     @PutMapping(value = "/{id}")
     public ResponseEntity<ApiResponse<Void>> update(@PathVariable UUID id, @Valid @RequestBody RoleRequest roleRequest) {
-        roleRequest.setId(id);
-        roleService.updateRole(roleRequest);
+        roleService.updateRole(id, roleRequest);
         return ResponseEntity.ok(ApiResponse.success(null, "Role updated successfully."));
     }
 

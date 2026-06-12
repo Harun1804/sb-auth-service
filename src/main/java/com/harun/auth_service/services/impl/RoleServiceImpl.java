@@ -57,28 +57,28 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public void createRole(RoleRequest request) {
-        if (roleRepository.findByNameIgnoreCase(request.getName()).isPresent()) {
+        if (roleRepository.findByNameIgnoreCase(request.name()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Role already exists");
         }
 
         Role role = new Role();
-        role.setName(request.getName());
-        role.setDescription(request.getDescription());
+        role.setName(request.name());
+        role.setDescription(request.description());
         roleRepository.save(role);
     }
 
     @Override
-    public void updateRole(RoleRequest request) {
-        Role role = roleRepository.findById(request.getId()).orElseThrow(
+    public void updateRole(UUID id, RoleRequest request) {
+        Role role = roleRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role Not Found")
         );
 
-        if (!Objects.equals(role.getName(), request.getName()) && roleRepository.findByNameIgnoreCase(request.getName()).isPresent()) {
+        if (!Objects.equals(role.getName(), request.name()) && roleRepository.findByNameIgnoreCase(request.name()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Role already exists");
         }
 
-        role.setName(request.getName());
-        role.setDescription(request.getDescription());
+        role.setName(request.name());
+        role.setDescription(request.description());
         roleRepository.save(role);
     }
 
@@ -92,11 +92,10 @@ public class RoleServiceImpl implements RoleService {
     }
 
     private RoleResponse generateRoleResponse(Role role) {
-        RoleResponse roleResponse = new RoleResponse();
-        roleResponse.setId(role.getId());
-        roleResponse.setName(role.getName());
-        roleResponse.setDescription(role.getDescription());
-
-        return roleResponse;
+        return new RoleResponse(
+            role.getId(),
+            role.getName(),
+            role.getDescription()
+        );
     }
 }
