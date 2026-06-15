@@ -3,14 +3,13 @@ package com.harun.auth_service.services.impl;
 import com.harun.auth_service.entities.Role;
 import com.harun.auth_service.entities.User;
 import com.harun.auth_service.entities.pivot.RoleUser;
+import com.harun.auth_service.exception.EntityNotFoundException;
 import com.harun.auth_service.payloads.user.req.RoleUserRequest;
 import com.harun.auth_service.repositories.pivot.RoleUserRepository;
 import com.harun.auth_service.services.RoleUserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -38,7 +37,7 @@ public class RoleUserImpl implements RoleUserService {
     @Transactional
     public void detachRole(RoleUserRequest request) {
         request.roles().forEach(role -> {
-            RoleUser roleUser = roleUserRepository.findByUserAndRole(request.user(), role).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role "+ role.getName() +" not found on this user"));
+            RoleUser roleUser = roleUserRepository.findByUserAndRole(request.user(), role).orElseThrow(() -> new EntityNotFoundException("Role "+ role.getName() +" not found on this user"));
             roleUserRepository.delete(roleUser);
         });
     }

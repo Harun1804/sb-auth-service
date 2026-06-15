@@ -1,15 +1,21 @@
 package com.harun.auth_service.utils;
 
-import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
 public class HashPassword {
-    public String generate(String password) {
-        return BCrypt.hashpw(password, BCrypt.gensalt());
+    private final PasswordEncoder passwordEncoder;
+
+    public HashPassword(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public boolean check(String password, String hashedPassword) {
-        return BCrypt.checkpw(password, hashedPassword);
+    public String generate(String rawPassword) {
+        return passwordEncoder.encode(rawPassword);
+    }
+
+    public boolean check(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 }

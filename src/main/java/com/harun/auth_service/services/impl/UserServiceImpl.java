@@ -1,6 +1,8 @@
 package com.harun.auth_service.services.impl;
 
 import com.harun.auth_service.entities.Role;
+import com.harun.auth_service.exception.ConflictException;
+import com.harun.auth_service.exception.EntityNotFoundException;
 import com.harun.auth_service.payloads.user.req.*;
 import com.harun.auth_service.entities.User;
 import com.harun.auth_service.enums.UserStatus;
@@ -14,18 +16,18 @@ import com.harun.auth_service.services.UserService;
 import com.harun.auth_service.utils.HashPassword;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -61,14 +63,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetailResponse getUserById(UUID id) {
-        User user = userRepository.findWithRolesById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        User user = userRepository.findWithRolesById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
         return responseService.generateUserDetailResponse(user);
     }
 
     @Override
     public UserDetailResponse getUserByEmail(String email) {
         User user = userRepository.findWithRolesByEmailIgnoreCase(email).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+            () -> new EntityNotFoundException("User not found")
         );
         return responseService.generateUserDetailResponse(user);
     }
@@ -76,8 +78,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void createUser(CreateUserRequest request) {
+        log.info("Creating user with email={}", request.email());
         if (userRepository.findByEmailIgnoreCase(request.email()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+            throw new ConflictException("Email already exists");
         }
 
         User user = new User();
@@ -86,17 +89,18 @@ public class UserServiceImpl implements UserService {
         user.setStatus(UserStatus.ACTIVE);
 
         userRepository.save(user);
+        log.debug("User saved id={}", user.getId());
     }
 
     @Override
     @Transactional
     public void updateUser(UUID id, UpdateUserRequest request) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+                () -> new EntityNotFoundException("User not found")
         );
 
         if (!Objects.equals(user.getEmail(), request.email()) && userRepository.findByEmailIgnoreCase(request.email()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+            throw new ConflictException("Email already exists");
         }
 
         user.setEmail(request.email());
@@ -110,7 +114,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void deleteUser(UUID id) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+                () -> new EntityNotFoundException("User not found")
         );
 
         userRepository.delete(user);
@@ -119,12 +123,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void assignRole(AssignRoleRequest request) {
         User user = userRepository.findById(request.id()).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+            () -> new EntityNotFoundException("User not found")
         );
 
         List<Role> roles = roleRepository.findByIdIn(request.roles());
         if (roles.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found");
+            throw new EntityNotFoundException("Role not found");
         }
 
         roleUserService.assignRole(new RoleUserRequest(user, roles));
@@ -133,12 +137,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void detachRole(AssignRoleRequest request) {
         User user = userRepository.findById(request.id()).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+            () -> new EntityNotFoundException("User not found")
         );
 
         List<Role> roles = roleRepository.findByIdIn(request.roles());
         if (roles.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found");
+            throw new EntityNotFoundException("Role not found");
         }
 
         roleUserService.detachRole(new RoleUserRequest(user, roles));

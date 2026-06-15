@@ -1,6 +1,8 @@
 package com.harun.auth_service.services.impl;
 
 import com.harun.auth_service.entities.Role;
+import com.harun.auth_service.exception.ConflictException;
+import com.harun.auth_service.exception.EntityNotFoundException;
 import com.harun.auth_service.payloads.role.req.RoleRequest;
 import com.harun.auth_service.payloads.role.req.SearchRoleRequest;
 import com.harun.auth_service.payloads.role.res.RoleResponse;
@@ -11,10 +13,8 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +53,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleResponse getRoleById(UUID id) {
         Role role = roleRepository.findById(id).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role Not Found")
+            () -> new EntityNotFoundException("Role Not Found")
         );
 
         return responseService.generateRoleResponse(role);
@@ -63,7 +63,7 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public void createRole(RoleRequest request) {
         if (roleRepository.findByNameIgnoreCase(request.name()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Role already exists");
+            throw new ConflictException("Role already exists");
         }
 
         Role role = new Role();
@@ -76,11 +76,11 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public void updateRole(UUID id, RoleRequest request) {
         Role role = roleRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role Not Found")
+                () -> new EntityNotFoundException("Role Not Found")
         );
 
         if (!Objects.equals(role.getName(), request.name()) && roleRepository.findByNameIgnoreCase(request.name()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Role already exists");
+            throw new ConflictException("Role already exists");
         }
 
         role.setName(request.name());
@@ -92,7 +92,7 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public void deleteRole(UUID id) {
         Role role = roleRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role Not Found")
+                () -> new EntityNotFoundException("Role Not Found")
         );
 
         roleRepository.delete(role);
