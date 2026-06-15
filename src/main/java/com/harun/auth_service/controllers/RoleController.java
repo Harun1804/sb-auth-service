@@ -38,10 +38,6 @@ public class RoleController {
                 .build();
 
         Page<RoleResponse> response = roleService.getRoles(request);
-        if (response.getTotalElements() == 0) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.notFound("Role not found."));
-        }
 
         return ResponseEntity.ok(
             ApiResponse.success(
@@ -54,7 +50,7 @@ public class RoleController {
         );
     }
 
-    @GetMapping(value = "/find-by-id/{id}")
+    @GetMapping(value = "/{id}")
     public ResponseEntity<ApiResponse<RoleResponse>> findById(@PathVariable UUID id)
     {
         RoleResponse userResponse = roleService.getRoleById(id);

@@ -41,10 +41,6 @@ public class UserController {
                 .build();
 
         Page<UserListResponse> response = userService.getUsers(request);
-        if (response.getTotalElements() == 0) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.notFound("User not found."));
-        }
 
         return ResponseEntity.ok(
             ApiResponse.success(
@@ -57,7 +53,7 @@ public class UserController {
         );
     }
 
-    @GetMapping(value = "/find-by-id/{id}")
+    @GetMapping(value = "/{id}")
     public ResponseEntity<ApiResponse<UserDetailResponse>> findById(@PathVariable UUID id)
     {
         UserDetailResponse userDetailResponse = userService.getUserById(id);
