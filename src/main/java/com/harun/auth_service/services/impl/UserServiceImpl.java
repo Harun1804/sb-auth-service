@@ -1,12 +1,17 @@
 package com.harun.auth_service.services.impl;
 
 import com.harun.auth_service.entities.Role;
+import com.harun.auth_service.entities.pivot.RoleUser;
+import com.harun.auth_service.payloads.role.res.RoleResponse;
 import com.harun.auth_service.payloads.user.req.*;
 import com.harun.auth_service.entities.User;
 import com.harun.auth_service.enums.UserStatus;
-import com.harun.auth_service.payloads.user.res.UserResponse;
+import com.harun.auth_service.payloads.user.res.UserAuthResponse;
+import com.harun.auth_service.payloads.user.res.UserDetailResponse;
+import com.harun.auth_service.payloads.user.res.UserListResponse;
 import com.harun.auth_service.repositories.RoleRepository;
 import com.harun.auth_service.repositories.UserRepository;
+import com.harun.auth_service.services.ResponseService;
 import com.harun.auth_service.services.RoleUserService;
 import com.harun.auth_service.services.UserService;
 import com.harun.auth_service.utils.HashPassword;
@@ -30,10 +35,12 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
 
     private final RoleUserService roleUserService;
+    private final ResponseService responseService;
+
     private final HashPassword hashPassword;
 
     @Override
-    public Page<UserResponse> getUsers(SearchUserRequest userSearchRequest) {
+    public Page<UserListResponse> getUsers(SearchUserRequest userSearchRequest) {
         Specification<User> specification = (root, query, builder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -50,22 +57,22 @@ public class UserServiceImpl implements UserService {
         Sort sort = userSearchRequest.getSortDirection().equalsIgnoreCase("asc") ? Sort.by(userSearchRequest.getSortBy()).ascending() : Sort.by(userSearchRequest.getSortBy()).descending();
         Pageable pageable = PageRequest.of(userSearchRequest.getPage(), userSearchRequest.getSize(), sort);
         Page<User> users = userRepository.findAll(specification, pageable);
-        List<UserResponse> userResponses = users.getContent().stream().map(user -> generateUserResponse(user, false)).toList();
-        return new PageImpl<>(userResponses, pageable, users.getTotalElements());
+        List<UserListResponse> userDetailResponse = users.getContent().stream().map(responseService::generateUserListResponse).toList();
+        return new PageImpl<>(userDetailResponse, pageable, users.getTotalElements());
     }
 
     @Override
-    public UserResponse getUserById(UUID id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        return generateUserResponse(user, false);
+    public UserDetailResponse getUserById(UUID id) {
+        User user = userRepository.findWithRolesById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return responseService.generateUserDetailResponse(user);
     }
 
     @Override
-    public UserResponse getUserByEmail(String email) {
-        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow(
+    public UserAuthResponse getUserByEmail(String email) {
+        User user = userRepository.findWithRolesByEmailIgnoreCase(email).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
         );
-        return generateUserResponse(user, true);
+        return responseService.generateUserAuthResponse(user);
     }
 
     @Override
@@ -134,14 +141,5 @@ public class UserServiceImpl implements UserService {
         }
 
         roleUserService.detachRole(new RoleUserRequest(user, roles));
-    }
-
-    private UserResponse generateUserResponse(User user, Boolean needPassword) {
-        return new UserResponse(
-            user.getId(),
-            user.getEmail(),
-            needPassword ? user.getPassword() : null,
-            user.getStatus().toString()
-        );
     }
 }

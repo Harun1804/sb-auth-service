@@ -5,6 +5,7 @@ import com.harun.auth_service.payloads.role.req.RoleRequest;
 import com.harun.auth_service.payloads.role.req.SearchRoleRequest;
 import com.harun.auth_service.payloads.role.res.RoleResponse;
 import com.harun.auth_service.repositories.RoleRepository;
+import com.harun.auth_service.services.ResponseService;
 import com.harun.auth_service.services.RoleService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,8 @@ import java.util.UUID;
 public class RoleServiceImpl implements RoleService {
     private final RoleRepository roleRepository;
 
+    private final ResponseService responseService;
+
     @Override
     public Page<RoleResponse> getRoles(SearchRoleRequest searchRoleRequest) {
         Specification<Role> specification = (root, query, builder) -> {
@@ -42,7 +45,7 @@ public class RoleServiceImpl implements RoleService {
         Sort sort = searchRoleRequest.getSortDirection().equalsIgnoreCase("asc") ? Sort.by(searchRoleRequest.getSortBy()).ascending() : Sort.by(searchRoleRequest.getSortBy()).descending();
         Pageable pageable = PageRequest.of(searchRoleRequest.getPage(), searchRoleRequest.getSize(), sort);
         Page<Role> roles = roleRepository.findAll(specification, pageable);
-        List<RoleResponse> roleResponses = roles.getContent().stream().map(this::generateRoleResponse).toList();
+        List<RoleResponse> roleResponses = roles.getContent().stream().map(responseService::generateRoleResponse).toList();
         return new PageImpl<>(roleResponses, pageable, roles.getTotalElements());
     }
 
@@ -52,7 +55,7 @@ public class RoleServiceImpl implements RoleService {
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role Not Found")
         );
 
-        return generateRoleResponse(role);
+        return responseService.generateRoleResponse(role);
     }
 
     @Override
@@ -89,13 +92,5 @@ public class RoleServiceImpl implements RoleService {
         );
 
         roleRepository.delete(role);
-    }
-
-    private RoleResponse generateRoleResponse(Role role) {
-        return new RoleResponse(
-            role.getId(),
-            role.getName(),
-            role.getDescription()
-        );
     }
 }

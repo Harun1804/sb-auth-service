@@ -1,5 +1,6 @@
 package com.harun.auth_service.entities;
 
+import com.harun.auth_service.entities.pivot.RoleUser;
 import com.harun.auth_service.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -42,6 +45,9 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<RoleUser> roleUsers = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {

@@ -41,8 +41,8 @@ public class RoleUserImpl implements RoleUserService {
     }
 
     @Override
-    public RoleUser findByUser(User user) {
-        return roleUserRepository.findByUser(user).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User Not Found"));
+    public List<RoleUser> findByUser(User user) {
+        return roleUserRepository.findByUserWithRole(user);
     }
 
     @Override

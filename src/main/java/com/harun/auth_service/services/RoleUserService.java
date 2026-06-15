@@ -10,6 +10,6 @@ import java.util.List;
 public interface RoleUserService {
     void assignRole(RoleUserRequest request);
     void detachRole(RoleUserRequest request);
-    RoleUser findByUser(User user);
+    List<RoleUser> findByUser(User user);
     List<RoleUser> findByRole(Role role);
 }

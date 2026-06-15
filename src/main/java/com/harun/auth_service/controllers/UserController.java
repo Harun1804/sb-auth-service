@@ -2,6 +2,8 @@ package com.harun.auth_service.controllers;
 
 import com.harun.auth_service.payloads.user.req.AssignRoleRequest;
 import com.harun.auth_service.payloads.user.req.SearchUserRequest;
+import com.harun.auth_service.payloads.user.res.UserAuthResponse;
+import com.harun.auth_service.payloads.user.res.UserListResponse;
 import com.harun.auth_service.services.UserService;
 import com.harun.formatter.ApiResponse;
 import jakarta.validation.Valid;
@@ -12,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.harun.auth_service.payloads.user.req.CreateUserRequest;
 import com.harun.auth_service.payloads.user.req.UpdateUserRequest;
-import com.harun.auth_service.payloads.user.res.UserResponse;
+import com.harun.auth_service.payloads.user.res.UserDetailResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +26,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<UserResponse>>> index(
+    public ResponseEntity<ApiResponse<List<UserListResponse>>> index(
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "sortBy", required = false, defaultValue = "id") String sortBy,
             @RequestParam(value = "sortDirection", required = false, defaultValue = "desc") String sortDirection,
@@ -39,7 +41,7 @@ public class UserController {
                 .size(size)
                 .build();
 
-        Page<UserResponse> response = userService.getUsers(request);
+        Page<UserListResponse> response = userService.getUsers(request);
         if (response.getTotalElements() == 0) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.notFound("User not found."));
@@ -57,30 +59,30 @@ public class UserController {
     }
 
     @GetMapping(value = "/find-by-id/{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> findById(@PathVariable UUID id)
+    public ResponseEntity<ApiResponse<UserDetailResponse>> findById(@PathVariable UUID id)
     {
-        UserResponse userResponse = userService.getUserById(id);
-        if (userResponse == null) {
+        UserDetailResponse userDetailResponse = userService.getUserById(id);
+        if (userDetailResponse == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.notFound("User not found."));
         }
 
         return ResponseEntity.ok(
-            ApiResponse.success(userResponse, "User found.")
+            ApiResponse.success(userDetailResponse, "User found.")
         );
     }
 
     @GetMapping(value = "/find-by-email/{email}")
-    public ResponseEntity<ApiResponse<UserResponse>> findByEmail(@PathVariable String email)
+    public ResponseEntity<ApiResponse<UserAuthResponse>> findByEmail(@PathVariable String email)
     {
-        UserResponse userResponse = userService.getUserByEmail(email);
-        if (userResponse == null) {
+        UserAuthResponse userAuthResponse = userService.getUserByEmail(email);
+        if (userAuthResponse == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.notFound("User not found."));
         }
 
         return ResponseEntity.ok(
-            ApiResponse.success(userResponse, "User found.")
+            ApiResponse.success(userAuthResponse, "User found.")
         );
     }
 
