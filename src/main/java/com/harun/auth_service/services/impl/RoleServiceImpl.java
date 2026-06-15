@@ -13,6 +13,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
@@ -59,6 +60,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional
     public void createRole(RoleRequest request) {
         if (roleRepository.findByNameIgnoreCase(request.name()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Role already exists");
@@ -71,6 +73,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional
     public void updateRole(UUID id, RoleRequest request) {
         Role role = roleRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role Not Found")
@@ -86,6 +89,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional
     public void deleteRole(UUID id) {
         Role role = roleRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role Not Found")

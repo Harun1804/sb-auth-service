@@ -9,6 +9,7 @@ import com.harun.auth_service.services.RoleUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class RoleUserImpl implements RoleUserService {
     private final RoleUserRepository roleUserRepository;
 
     @Override
+    @Transactional
     public void assignRole(RoleUserRequest request) {
         request.roles().forEach(role -> {
             if (roleUserRepository.findByUserAndRole(request.user(), role).isPresent()) {
@@ -33,6 +35,7 @@ public class RoleUserImpl implements RoleUserService {
     }
 
     @Override
+    @Transactional
     public void detachRole(RoleUserRequest request) {
         request.roles().forEach(role -> {
             RoleUser roleUser = roleUserRepository.findByUserAndRole(request.user(), role).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role "+ role.getName() +" not found on this user"));
