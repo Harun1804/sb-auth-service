@@ -29,6 +29,7 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(nullable = false, length = 15)
     private String name;
 
     @Column(columnDefinition = "text")
