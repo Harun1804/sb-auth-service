@@ -72,9 +72,9 @@ public class UserController {
     }
 
     @GetMapping(value = "/find-by-email/{email}")
-    public ResponseEntity<ApiResponse<UserAuthResponse>> findByEmail(@PathVariable String email)
+    public ResponseEntity<ApiResponse<UserDetailResponse>> findByEmail(@PathVariable String email)
     {
-        UserAuthResponse userAuthResponse = userService.getUserByEmail(email);
+        UserDetailResponse userAuthResponse = userService.getUserByEmail(email);
         if (userAuthResponse == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.notFound("User not found."));
