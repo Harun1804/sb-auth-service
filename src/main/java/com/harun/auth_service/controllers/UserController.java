@@ -1,5 +1,6 @@
 package com.harun.auth_service.controllers;
 
+import com.harun.auth_service.payloads.user.req.AssignRoleRequest;
 import com.harun.auth_service.payloads.user.req.SearchUserRequest;
 import com.harun.auth_service.services.UserService;
 import com.harun.formatter.ApiResponse;
@@ -87,6 +88,18 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> create(@Valid @RequestBody CreateUserRequest createUserRequest) {
         userService.createUser(createUserRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(null, "User created successfully."));
+    }
+
+    @PostMapping(value = "/assign-role")
+    public ResponseEntity<ApiResponse<Void>> assignRole(@Valid @RequestBody AssignRoleRequest assignRoleRequest) {
+        userService.assignRole(assignRoleRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(null, "User assigned successfully."));
+    }
+
+    @PostMapping(value = "/detach-role")
+    public ResponseEntity<ApiResponse<Void>> detachRole(@Valid @RequestBody AssignRoleRequest assignRoleRequest) {
+        userService.detachRole(assignRoleRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null, "User detach successfully."));
     }
 
     @PutMapping(value = "/{id}")

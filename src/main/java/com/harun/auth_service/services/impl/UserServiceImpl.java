@@ -1,12 +1,13 @@
 package com.harun.auth_service.services.impl;
 
-import com.harun.auth_service.payloads.user.req.CreateUserRequest;
-import com.harun.auth_service.payloads.user.req.UpdateUserRequest;
-import com.harun.auth_service.payloads.user.req.SearchUserRequest;
+import com.harun.auth_service.entities.Role;
+import com.harun.auth_service.payloads.user.req.*;
 import com.harun.auth_service.entities.User;
 import com.harun.auth_service.enums.UserStatus;
 import com.harun.auth_service.payloads.user.res.UserResponse;
+import com.harun.auth_service.repositories.RoleRepository;
 import com.harun.auth_service.repositories.UserRepository;
+import com.harun.auth_service.services.RoleUserService;
 import com.harun.auth_service.services.UserService;
 import com.harun.auth_service.utils.HashPassword;
 import jakarta.persistence.criteria.Predicate;
@@ -26,6 +27,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+
+    private final RoleUserService roleUserService;
     private final HashPassword hashPassword;
 
     @Override
@@ -102,6 +106,34 @@ public class UserServiceImpl implements UserService {
         );
 
         userRepository.delete(user);
+    }
+
+    @Override
+    public void assignRole(AssignRoleRequest request) {
+        User user = userRepository.findById(request.id()).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+        );
+
+        List<Role> roles = roleRepository.findByIdIn(request.roles());
+        if (roles.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found");
+        }
+
+        roleUserService.assignRole(new RoleUserRequest(user, roles));
+    }
+
+    @Override
+    public void detachRole(AssignRoleRequest request) {
+        User user = userRepository.findById(request.id()).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+        );
+
+        List<Role> roles = roleRepository.findByIdIn(request.roles());
+        if (roles.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found");
+        }
+
+        roleUserService.detachRole(new RoleUserRequest(user, roles));
     }
 
     private UserResponse generateUserResponse(User user, Boolean needPassword) {
