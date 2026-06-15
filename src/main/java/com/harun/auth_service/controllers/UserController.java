@@ -2,7 +2,6 @@ package com.harun.auth_service.controllers;
 
 import com.harun.auth_service.payloads.user.req.AssignRoleRequest;
 import com.harun.auth_service.payloads.user.req.SearchUserRequest;
-import com.harun.auth_service.payloads.user.res.UserAuthResponse;
 import com.harun.auth_service.payloads.user.res.UserListResponse;
 import com.harun.auth_service.services.UserService;
 import com.harun.formatter.ApiResponse;

@@ -4,7 +4,6 @@ import com.harun.auth_service.entities.Role;
 import com.harun.auth_service.entities.User;
 import com.harun.auth_service.entities.pivot.RoleUser;
 import com.harun.auth_service.payloads.role.res.RoleResponse;
-import com.harun.auth_service.payloads.user.res.UserAuthResponse;
 import com.harun.auth_service.payloads.user.res.UserDetailResponse;
 import com.harun.auth_service.payloads.user.res.UserListResponse;
 import com.harun.auth_service.services.ResponseService;
@@ -38,17 +37,6 @@ public class ResponseServiceImpl implements ResponseService {
             user.getId(),
             user.getEmail(),
             user.getStatus().toString()
-        );
-    }
-
-    @Override
-    public UserAuthResponse generateUserAuthResponse(User user) {
-        return new UserAuthResponse(
-            user.getId(),
-            user.getEmail(),
-            user.getPassword(),
-            user.getStatus().toString(),
-            generateRoleResponses(user)
         );
     }
 

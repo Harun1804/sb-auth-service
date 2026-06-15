@@ -1,12 +1,9 @@
 package com.harun.auth_service.services.impl;
 
 import com.harun.auth_service.entities.Role;
-import com.harun.auth_service.entities.pivot.RoleUser;
-import com.harun.auth_service.payloads.role.res.RoleResponse;
 import com.harun.auth_service.payloads.user.req.*;
 import com.harun.auth_service.entities.User;
 import com.harun.auth_service.enums.UserStatus;
-import com.harun.auth_service.payloads.user.res.UserAuthResponse;
 import com.harun.auth_service.payloads.user.res.UserDetailResponse;
 import com.harun.auth_service.payloads.user.res.UserListResponse;
 import com.harun.auth_service.repositories.RoleRepository;
@@ -68,11 +65,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserAuthResponse getUserByEmail(String email) {
+    public UserDetailResponse getUserByEmail(String email) {
         User user = userRepository.findWithRolesByEmailIgnoreCase(email).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
         );
-        return responseService.generateUserAuthResponse(user);
+        return responseService.generateUserDetailResponse(user);
     }
 
     @Override
