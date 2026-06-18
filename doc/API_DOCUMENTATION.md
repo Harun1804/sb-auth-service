@@ -535,7 +535,7 @@ Database Cleanup:
 
 ## Related Documentation
 
-- [Refresh Token Storage Implementation](./REFRESH_TOKEN_STORAGE.md)
+- [Refresh Token Storage Implementation](REFRESH_TOKEN_STORAGE.md)
 - [JWT Security Guide](./JWT_SECURITY.md) (future)
 - [API Error Codes](./ERROR_CODES.md) (future)
 
