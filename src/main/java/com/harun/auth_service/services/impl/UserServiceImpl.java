@@ -13,7 +13,7 @@ import com.harun.auth_service.repositories.UserRepository;
 import com.harun.auth_service.services.ResponseService;
 import com.harun.auth_service.services.RoleUserService;
 import com.harun.auth_service.services.UserService;
-import com.harun.auth_service.utils.HashPassword;
+import com.harun.auth_service.utils.Hash;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
     private final RoleUserService roleUserService;
     private final ResponseService responseService;
 
-    private final HashPassword hashPassword;
+    private final Hash hash;
 
     @Override
     public Page<UserListResponse> getUsers(SearchUserRequest userSearchRequest) {
@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
 
         User user = new User();
         user.setEmail(request.email());
-        user.setPassword(hashPassword.generate(request.password()));
+        user.setPassword(hash.password(request.password()));
         user.setStatus(UserStatus.ACTIVE);
 
         userRepository.save(user);
@@ -105,7 +105,7 @@ public class UserServiceImpl implements UserService {
 
         user.setEmail(request.email());
         if (request.password() != null) {
-            user.setPassword(hashPassword.generate(request.password()));
+            user.setPassword(hash.password(request.password()));
         }
         userRepository.save(user);
     }
