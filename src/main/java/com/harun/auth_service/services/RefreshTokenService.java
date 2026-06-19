@@ -16,7 +16,7 @@ public interface RefreshTokenService {
     /**
      * Create and save a new refresh token
      */
-    RefreshToken createRefreshToken(User user, String token, String userAgent, String ipAddress);
+    void createRefreshToken(User user, String token, String userAgent, String ipAddress);
 
     /**
      * Validate and retrieve a refresh token

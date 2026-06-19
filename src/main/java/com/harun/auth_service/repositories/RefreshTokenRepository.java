@@ -23,7 +23,7 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
      */
     @Query("""
         SELECT rt FROM RefreshToken rt 
-        WHERE rt.token = :token 
+        WHERE rt.tokenHash = :token 
         AND rt.revokedAt IS NULL 
         AND rt.expiresAt > CURRENT_TIMESTAMP
     """)
@@ -32,7 +32,7 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
     /**
      * Find a refresh token by token string (regardless of validity)
      */
-    Optional<RefreshToken> findByToken(String token);
+    Optional<RefreshToken> findByTokenHash(String token);
 
     /**
      * Find all valid refresh tokens for a user

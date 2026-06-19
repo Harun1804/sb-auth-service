@@ -9,5 +9,5 @@ public interface AuthService {
     LoginResponse login(LoginRequest loginRequest, String userAgent, String ipAddress);
     LoginResponse refreshAccessToken(String refreshToken);
     void logout(String refreshToken);
-    void logoutAllDevices(UUID userId);
+    void logoutAllDevices(String accessToken);
 }

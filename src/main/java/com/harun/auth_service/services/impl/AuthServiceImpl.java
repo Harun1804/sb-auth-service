@@ -8,7 +8,7 @@ import com.harun.auth_service.payloads.auth.res.LoginResponse;
 import com.harun.auth_service.repositories.UserRepository;
 import com.harun.auth_service.services.AuthService;
 import com.harun.auth_service.services.RefreshTokenService;
-import com.harun.auth_service.utils.HashPassword;
+import com.harun.auth_service.utils.Hash;
 import com.harun.auth_service.utils.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
-    private final HashPassword hashPassword;
+    private final Hash hash;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
 
@@ -76,7 +76,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Verify password
-        if (!hashPassword.check(password, user.getPassword())) {
+        if (!hash.check(password, user.getPassword())) {
             log.warn("Failed login attempt for user: {}", email);
             throw new IllegalArgumentException("Invalid email or password");
         }
@@ -136,7 +136,6 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("Token must be a refresh token");
         }
 
-        UUID userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
         String email = jwtTokenProvider.getEmailFromToken(refreshToken);
 
         // Generate new access token without database query
@@ -173,7 +172,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public void logoutAllDevices(UUID userId) {
+    public void logoutAllDevices(String accessToken) {
+        UUID userId = jwtTokenProvider.getUserIdFromToken(accessToken);
+
         if (userId == null) {
             log.warn("Logout all devices attempt with missing user ID");
             throw new IllegalArgumentException("User ID is required");

@@ -4,10 +4,13 @@ import com.harun.auth_service.entities.RefreshToken;
 import com.harun.auth_service.entities.User;
 import com.harun.auth_service.repositories.RefreshTokenRepository;
 import com.harun.auth_service.services.RefreshTokenService;
+import com.harun.auth_service.utils.Hash;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,23 +33,23 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private static final int REFRESH_TOKEN_EXPIRATION_DAYS = 7;
+    private final Hash hash;
 
     /**
      * Create and save a new refresh token
      */
     @Override
-    public RefreshToken createRefreshToken(User user, String token, String userAgent, String ipAddress) {
+    public void createRefreshToken(User user, String token, String userAgent, String ipAddress) {
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
-                .token(token)
+                .tokenHash(hash.token(token))
                 .expiresAt(LocalDateTime.now().plusDays(REFRESH_TOKEN_EXPIRATION_DAYS))
                 .userAgent(userAgent)
                 .ipAddress(ipAddress)
                 .build();
 
-        RefreshToken saved = refreshTokenRepository.save(refreshToken);
+        refreshTokenRepository.save(refreshToken);
         log.info("Refresh token created for user: {} (expires in {} days)", user.getEmail(), REFRESH_TOKEN_EXPIRATION_DAYS);
-        return saved;
     }
 
     /**
@@ -59,8 +62,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         if (token == null || token.isBlank()) {
             return Optional.empty();
         }
-
-        Optional<RefreshToken> refreshToken = refreshTokenRepository.findValidByToken(token);
+        String hashedToken = hash.token(token);
+        Optional<RefreshToken> refreshToken = refreshTokenRepository.findValidByToken(hashedToken);
 
         if (refreshToken.isPresent()) {
             log.debug("Refresh token validated successfully for user: {}", refreshToken.get().getUser().getEmail());
@@ -87,15 +90,18 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     @Override
     public void revokeToken(String token) {
         if (token == null || token.isBlank()) {
-            return;
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Refresh token is required"
+            );
         }
 
-        Optional<RefreshToken> refreshToken = refreshTokenRepository.findByToken(token);
-        if (refreshToken.isPresent()) {
-            refreshToken.get().revoke();
-            refreshTokenRepository.save(refreshToken.get());
-            log.info("Refresh token revoked for user: {}", refreshToken.get().getUser().getEmail());
-        }
+        String  hashedToken = hash.token(token);
+        RefreshToken refreshToken = refreshTokenRepository.findValidByToken(hashedToken).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token")
+        );
+
+        refreshToken.revoke();
     }
 
     /**
@@ -118,7 +124,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
             return false;
         }
 
-        Optional<RefreshToken> refreshToken = refreshTokenRepository.findValidByToken(token);
+        String hashedToken = hash.token(token);
+        Optional<RefreshToken> refreshToken = refreshTokenRepository.findValidByToken(hashedToken);
         return refreshToken.isPresent();
     }
 
