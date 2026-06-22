@@ -1,5 +1,6 @@
 package com.harun.auth_service.services;
 
+import com.harun.auth_service.entities.User;
 import com.harun.auth_service.payloads.user.req.AssignRoleRequest;
 import com.harun.auth_service.payloads.user.req.CreateUserRequest;
 import com.harun.auth_service.payloads.user.req.UpdateUserRequest;
@@ -14,7 +15,7 @@ public interface UserService {
     Page<UserListResponse> getUsers(SearchUserRequest userSearchRequest);
     UserDetailResponse getUserById(UUID id);
     UserDetailResponse getUserByEmail(String email);
-    void createUser(CreateUserRequest request);
+    User createUser(CreateUserRequest request);
     void updateUser(UUID id, UpdateUserRequest request);
     void deleteUser(UUID id);
     void assignRole(AssignRoleRequest request);

@@ -1,6 +1,7 @@
 package com.harun.auth_service.controllers;
 
 import com.harun.auth_service.payloads.auth.req.LoginRequest;
+import com.harun.auth_service.payloads.auth.req.RegisterRequest;
 import com.harun.auth_service.payloads.auth.res.LoginResponse;
 import com.harun.auth_service.services.AuthService;
 import com.harun.auth_service.utils.Extracting;
@@ -50,6 +51,19 @@ public class AuthController {
             log.error("Unexpected error during login", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("An error occurred during login"));
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<Void>> register(@Valid @RequestBody RegisterRequest request) {
+        try {
+            authService.register(request);
+            log.info("User register successful for email: {}", request.email());
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success(null, "Registration successful"));
+        } catch (Exception e) {
+            log.error("Unexpected error during register", e);
+            throw new RuntimeException(e.getMessage());
         }
     }
 

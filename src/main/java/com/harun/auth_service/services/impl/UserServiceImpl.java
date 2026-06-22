@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void createUser(CreateUserRequest request) {
+    public User createUser(CreateUserRequest request) {
         log.info("Creating user with email={}", request.email());
         if (userRepository.findByEmailIgnoreCase(request.email()).isPresent()) {
             throw new ConflictException("Email already exists");
@@ -86,10 +86,16 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setEmail(request.email());
         user.setPassword(hash.password(request.password()));
-        user.setStatus(UserStatus.ACTIVE);
+        if (!request.isFromRegister()) {
+            user.setStatus(UserStatus.ACTIVE);
+        } else {
+            user.setStatus(UserStatus.PENDING);
+        }
 
-        userRepository.save(user);
-        log.debug("User saved id={}", user.getId());
+        userRepository.saveAndFlush(user);
+        log.info("User saved id={}", user.getId());
+
+        return user;
     }
 
     @Override

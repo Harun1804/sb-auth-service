@@ -1,13 +1,19 @@
 package com.harun.auth_service.services.impl;
 
+import com.harun.auth_service.entities.Role;
 import com.harun.auth_service.entities.User;
 import com.harun.auth_service.enums.UserStatus;
 import com.harun.auth_service.exception.EntityNotFoundException;
 import com.harun.auth_service.payloads.auth.req.LoginRequest;
+import com.harun.auth_service.payloads.auth.req.RegisterRequest;
 import com.harun.auth_service.payloads.auth.res.LoginResponse;
+import com.harun.auth_service.payloads.user.req.AssignRoleRequest;
+import com.harun.auth_service.payloads.user.req.CreateUserRequest;
+import com.harun.auth_service.repositories.RoleRepository;
 import com.harun.auth_service.repositories.UserRepository;
 import com.harun.auth_service.services.AuthService;
 import com.harun.auth_service.services.RefreshTokenService;
+import com.harun.auth_service.services.UserService;
 import com.harun.auth_service.utils.Hash;
 import com.harun.auth_service.utils.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -41,12 +47,14 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final Hash hash;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
 
+    private final UserService userService;
+
     @Override
-    @Transactional
     public LoginResponse login(LoginRequest loginRequest, String userAgent, String ipAddress) {
         // Validate input
         if (loginRequest.email() == null || loginRequest.password() == null) {
@@ -109,7 +117,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public LoginResponse refreshAccessToken(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
             log.warn("Refresh token attempt with missing token");
@@ -160,6 +167,28 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
+    public void register(RegisterRequest registerRequest) {
+        User user = userService.createUser(new CreateUserRequest(
+            registerRequest.email(),
+            registerRequest.password(),
+            true
+        ));
+
+        // Set Mitra Role
+        Role role = roleRepository.findByNameIgnoreCase("mitra").orElseThrow(
+            () -> new EntityNotFoundException("Role not found")
+        );
+
+        userService.assignRole(new AssignRoleRequest(
+            user.getId(),
+            List.of(role.getId())
+        ));
+        log.info("User role has been assign: {}", role.getName());
+
+        // kirim ke rabbit mq untuk mengirim verifikasi email
+    }
+
+    @Override
     public void logout(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
             log.warn("Logout attempt with missing refresh token");
@@ -171,7 +200,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional
     public void logoutAllDevices(String accessToken) {
         UUID userId = jwtTokenProvider.getUserIdFromToken(accessToken);
 
